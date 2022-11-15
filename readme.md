@@ -1,5 +1,8 @@
 # K3GDS REKL
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/scottmcleodjr/rekl)](https://goreportcard.com/report/github.com/scottmcleodjr/rekl)
+[![License](https://img.shields.io/badge/License-BSD_2--Clause-blue.svg)](LICENSE)
+
 The K3GDS REKL (Read, Eval, Key, Loop) gives an interactive repl-like experience for amateur radio morse code (CW) keying.
 
 ![REKL Demo GIF](demo.gif)
