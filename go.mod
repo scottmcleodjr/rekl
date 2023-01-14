@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/gdamore/tcell/v2 v2.5.3
 	github.com/rivo/tview v0.0.0-20221114151112-0b2ae1082352
-	github.com/scottmcleodjr/cwkeyer v0.0.0-20221022131659-bc0ac4701256
+	github.com/scottmcleodjr/cwkeyer v0.1.0
 )
 
 require (

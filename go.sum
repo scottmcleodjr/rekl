@@ -38,8 +38,8 @@ github.com/rivo/tview v0.0.0-20221114151112-0b2ae1082352/go.mod h1:YX2wUZOcJGOIy
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
 github.com/rivo/uniseg v0.4.2 h1:YwD0ulJSJytLpiaWua0sBDusfsCZohxjxzVTYjwxfV8=
 github.com/rivo/uniseg v0.4.2/go.mod h1:FN3SvrM+Zdj16jyLfmOkMNblXMcoc8DfTHruCPUcx88=
-github.com/scottmcleodjr/cwkeyer v0.0.0-20221022131659-bc0ac4701256 h1:6t0Nhe/SwC5OX7lxqXuT9sMxamgSoH+JGkklNm+Xd3o=
-github.com/scottmcleodjr/cwkeyer v0.0.0-20221022131659-bc0ac4701256/go.mod h1:sxdyykcee2MxO6JezVoc40F+nWa8YWbxXemrqa1mtec=
+github.com/scottmcleodjr/cwkeyer v0.1.0 h1:dO3KsQHFAl/VmqpptP998orLflTpPpX7qHM5CSBZfS0=
+github.com/scottmcleodjr/cwkeyer v0.1.0/go.mod h1:sxdyykcee2MxO6JezVoc40F+nWa8YWbxXemrqa1mtec=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 go.bug.st/serial v1.3.5 h1:k50SqGZCnHZ2MiBQgzccXWG+kd/XpOs1jUljpDDKzaE=
 go.bug.st/serial v1.3.5/go.mod h1:z8CesKorE90Qr/oRSJiEuvzYRKol9r/anJZEb5kt304=
