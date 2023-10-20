@@ -15,7 +15,7 @@ const (
 	maxSpeed    = 50 // Very very fast
 	welcomeText = `[::b]Welcome to the K3GDS REKL[::-]
 
-[::i]Written by Scott K3GDS, 2022
+[::i]Written by Scott K3GDS
 v0.1.3[::-]
 
 Enter "\help" for a list of supported commands.
