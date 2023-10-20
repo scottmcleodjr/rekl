@@ -4,13 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
 	"github.com/scottmcleodjr/cwkeyer"
 )
 
@@ -42,157 +37,42 @@ Any other inputs will be sent as CW if all characters are sendable.
 `
 )
 
-// speedRegex identifies input that is used to set the CW speed.
-var speedRegex = regexp.MustCompile(`^\\speed\s(\d+)$`)
-
 // config is a cwkeyer.SpeedProvider for the cwkeyer.Keyer.
 type config struct {
 	speed int
 }
 
+// newConfig returns a new Config.
+func newConfig() *config {
+	return &config{speed: initSpeed}
+}
+
+// Speed returns the current CW WPM speed.  Speed is
+// exported for the cwkeyer.SpeedProvider interface.
 func (cfg *config) Speed() int {
 	return cfg.speed
 }
 
-// tui is the terminal ui tree and contains fields
-// for components we need access to elsewhere.
-type tui struct {
-	eventView  *tview.TextView
-	inputField *tview.InputField
-	app        *tview.Application
+// setSpeed sets the current CW WPM speed.
+func (cfg *config) setSpeed(speed int) error {
+	if speed < minSpeed {
+		return fmt.Errorf("new speed is below minimum of %d", minSpeed)
+	}
+	if speed > maxSpeed {
+		return fmt.Errorf("new speed is above maximum of %d", maxSpeed)
+	}
+	cfg.speed = speed
+	return nil
 }
 
-// newTUI returns a tui with all the fields correctly initialized.
-func newTUI() *tui {
-	eventView := tview.NewTextView()
-	eventView.SetDynamicColors(true).SetBorder(true)
-
-	inputField := tview.NewInputField().SetLabel("Input:")
-	inputField.SetDrawFunc(func(screen tcell.Screen, x, y, width, height int) (int, int, int, int) {
-		// This helps keep things lined up correctly if you resize the window
-		eventView.ScrollToEnd()
-		return x, y, width, height
-	})
-
-	inputForm := tview.NewForm().AddFormItem(inputField)
-	inputForm.SetBorder(true)
-
-	flex := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(eventView, 0, 1, false).
-		AddItem(inputForm, 5, 0, true)
-	app := tview.NewApplication().SetRoot(flex, true)
-
-	return &tui{
-		eventView:  eventView,
-		inputField: inputField,
-		app:        app,
-	}
+// incrementSpeed raises the current CW WPM speed by one.
+func (cfg *config) incrementSpeed() error {
+	return cfg.setSpeed(cfg.Speed() + 1)
 }
 
-// writeStringToEventView writes a string to the eventView.
-// writeStringToEventView prepends a UTC timestamp and a green arrow
-// and appends a newline.
-func (t *tui) writeStringToEventView(s string) {
-	utcTime := time.Now().UTC()
-	line := fmt.Sprintf("%02d:%02d [green::b]>[-::-] %s\n", utcTime.Hour(), utcTime.Minute(), s)
-	t.eventView.Write([]byte(line))
-}
-
-// inputHandler contains the logic for parsing input into the inputField.
-// It will be set as the inputCapture for the inputField.
-func inputHandler(capture *tcell.EventKey, keyer cwkeyer.Keyer, tui *tui, cfg *config) *tcell.EventKey {
-
-	/* SPEED CONTROLS */
-
-	if capture.Key() == tcell.KeyUp {
-		if cfg.speed < maxSpeed {
-			cfg.speed++
-			tui.writeStringToEventView(fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
-			return capture
-		}
-		tui.writeStringToEventView(fmt.Sprintf("The speed is already at the maximum of %d WPM.", maxSpeed))
-		return capture
-	}
-
-	if capture.Key() == tcell.KeyDown {
-		if cfg.speed > minSpeed {
-			cfg.speed--
-			tui.writeStringToEventView(fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
-			return capture
-		}
-		tui.writeStringToEventView(fmt.Sprintf("The speed is already at the minimum of %d WPM.", minSpeed))
-		return capture
-	}
-
-	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\speed" {
-		tui.writeStringToEventView(fmt.Sprintf("The speed is currently %d WPM.", cfg.speed))
-		tui.inputField.SetText("")
-		return capture
-	}
-
-	speedMatch := speedRegex.FindStringSubmatch(tui.inputField.GetText())
-	if capture.Key() == tcell.KeyEnter && speedMatch != nil {
-		newSpeed, err := strconv.Atoi(speedMatch[1])
-		if err != nil {
-			tui.writeStringToEventView("[red::]ERROR:[-::] Unable to parse speed input.")
-			tui.inputField.SetText("")
-			return capture
-		}
-		if newSpeed < minSpeed || newSpeed > maxSpeed {
-			tui.writeStringToEventView("New speed is not in acceptable range.")
-			tui.inputField.SetText("")
-			return capture
-		}
-		cfg.speed = newSpeed
-		tui.writeStringToEventView(fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
-		tui.inputField.SetText("")
-		return capture
-	}
-
-	/* USAGE CONTROLS */
-
-	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\help" {
-		tui.writeStringToEventView(helpText)
-		tui.inputField.SetText("")
-		return capture
-	}
-
-	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\quit" {
-		tui.app.Stop()
-	}
-
-	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\clear" {
-		tui.eventView.Clear()
-		tui.inputField.SetText("")
-		return capture
-	}
-
-	/* SEND AND STOP */
-
-	if capture.Key() == tcell.KeyEsc ||
-		(capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\stop") {
-		keyer.DrainSendQueue()
-		tui.writeStringToEventView("All messages stopped.")
-		if tui.inputField.GetText() == "\\stop" {
-			tui.inputField.SetText("")
-		}
-		return capture
-	}
-
-	if capture.Key() == tcell.KeyEnter {
-		message := strings.ToUpper(tui.inputField.GetText())
-		err := keyer.QueueMessage(message)
-		if err != nil {
-			tui.writeStringToEventView(fmt.Sprintf("[red::]ERROR:[-::] %s", err.Error()))
-			return capture
-		}
-		tui.writeStringToEventView(fmt.Sprintf("[orange::]SENDING:[-::] %s", message))
-		tui.inputField.SetText("")
-		return capture
-	}
-
-	// Could do input sanitization here?
-	return capture
+// decrementSpeed lowers the current CW WPM speed by one.
+func (cfg *config) decrementSpeed() error {
+	return cfg.setSpeed(cfg.Speed() - 1)
 }
 
 func main() {
@@ -209,23 +89,28 @@ func main() {
 		key, err = cwkeyer.NewSerialDTRKey(*portName, 115200) // Using the suggested value
 	}
 	if err != nil {
-		log.Fatal(fmt.Sprintf("unable to create key: %s", err))
+		log.Fatalf("unable to create key: %s", err)
 	}
 
-	cfg := config{speed: initSpeed}
-	keyer := cwkeyer.New(&cfg, key)
-
+	rekl := newConfig()
+	keyer := cwkeyer.New(rekl, key)
 	tui := newTUI()
-	tui.eventView.Write([]byte(welcomeText)) // No timestamp on the welcome text
+
 	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
-		return inputHandler(capture, keyer, tui, &cfg)
+		for _, handler := range inputHandlers {
+			_, fired := handler(capture, &keyer, tui, rekl)
+			if fired {
+				return capture
+			}
+		}
+		return capture
 	})
 
 	go func() {
 		for {
 			err := keyer.ProcessSendQueue(false)
 			if err != nil {
-				tui.writeStringToEventView(fmt.Sprintf("[red::]ERROR:[-::] %s", err.Error()))
+				tui.writeToEventView(levelError, err.Error())
 			}
 		}
 	}()
