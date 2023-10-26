@@ -137,15 +137,15 @@ func main() {
 		log.Fatalf("unable to create key: %s", err)
 	}
 
-	rekl := newConfig()
-	keyer := cwkeyer.New(rekl, key)
+	cfg := newConfig()
+	keyer := cwkeyer.New(cfg, key)
 	tui := newTUI()
 
 	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
 		for _, handler := range inputHandlers {
-			_, fired := handler(capture, &keyer, tui, rekl)
+			captureOut, fired := handler(capture, &keyer, tui, cfg)
 			if fired {
-				return capture
+				return captureOut
 			}
 		}
 		return capture
