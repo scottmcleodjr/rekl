@@ -19,6 +19,9 @@ var inputHandlers = []inputHandler{
 	speedDecrementHandler,
 	speedSetHandler,
 	speedHandler,
+	messageSetHandler,
+	messageSendHandler,
+	configHandler,
 	helpHandler,
 	quitHandler,
 	clearHandler,
@@ -72,6 +75,7 @@ func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cf
 	if capture.Key() == tcell.KeyEnter && speedMatch != nil {
 		newSpeed, err := strconv.Atoi(speedMatch[1])
 		if err != nil {
+			// This should be unreachable with the regex test above
 			tui.writeToEventView(levelError, "Unable to parse speed input.")
 			tui.inputField.SetText("")
 			return capture, true
@@ -81,6 +85,76 @@ func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cf
 			tui.writeToEventView(levelError, err.Error())
 		}
 		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
+		tui.inputField.SetText("")
+		return capture, true
+	}
+
+	return capture, false
+}
+
+func messageSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+
+	var messageSetRegex = regexp.MustCompile(`^\\(\d)=(.*)$`)
+	messageSetMatch := messageSetRegex.FindStringSubmatch(tui.inputField.GetText())
+	if capture.Key() == tcell.KeyEnter && messageSetMatch != nil {
+		messageNumber, err := strconv.Atoi(messageSetMatch[1])
+		if err != nil {
+			// This should be unreachable with the regex test above
+			tui.writeToEventView(levelError, err.Error())
+			return capture, true
+		}
+		message := messageSetMatch[2]
+		err = cfg.setMessage(messageNumber, message)
+		if err != nil {
+			tui.writeToEventView(levelError, err.Error())
+			return capture, true
+		}
+
+		// Fetch it back from config so we get any formatting changes
+		formattedMessage, err := cfg.message(messageNumber)
+		if err != nil {
+			tui.writeToEventView(levelError, err.Error())
+			return capture, true
+		}
+		tui.writeToEventView(
+			levelInfo,
+			fmt.Sprintf("Saved message %d: %s", messageNumber, formattedMessage),
+		)
+		tui.inputField.SetText("")
+		return capture, true
+	}
+
+	return capture, false
+}
+
+func messageSendHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+
+	position := strings.IndexRune(")!@#$%^&*(", capture.Rune())
+	// Check the input field text so it won't just start
+	// sending if you try to use one of these in a message
+	if position != -1 && tui.inputField.GetText() == "" {
+		message, err := cfg.message(position)
+		if err != nil {
+			tui.writeToEventView(levelError, err.Error())
+			return nil, true
+		}
+
+		err = keyer.QueueMessage(message)
+		if err != nil {
+			tui.writeToEventView(levelError, err.Error())
+			return nil, true
+		}
+		tui.writeToEventView(levelInfo, fmt.Sprintf("Sending: %s", message))
+		return nil, true
+	}
+
+	return capture, false
+}
+
+func configHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+
+	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\config" {
+		tui.writeToEventView(levelInfo, cfg.string())
 		tui.inputField.SetText("")
 		return capture, true
 	}
