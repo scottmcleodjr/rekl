@@ -26,7 +26,8 @@ var inputHandlers = []inputHandler{
 	quitHandler,
 	clearHandler,
 	stopHandler,
-	cwHandler,
+	unknownCommandHandler, // This needs to be second to last
+	cwHandler,             // This needs to be last
 }
 
 func speedIncrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
@@ -202,6 +203,16 @@ func stopHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *c
 		if tui.inputField.GetText() == "\\stop" {
 			tui.inputField.SetText("")
 		}
+		return capture, true
+	}
+
+	return capture, false
+}
+
+func unknownCommandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+
+	if capture.Key() == tcell.KeyEnter && strings.HasPrefix(tui.inputField.GetText(), "\\") {
+		tui.writeToEventView(levelError, "unknown Command")
 		return capture, true
 	}
 
