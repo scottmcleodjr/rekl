@@ -15,7 +15,7 @@ const (
 	welcomeText = `[::b]Welcome to the K3GDS REKL[::-]
 
 [::i]Written by Scott K3GDS
-v0.1.3[::-]
+v0.2.1[::-]
 
 Enter "\help" for a list of supported commands.
 
