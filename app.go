@@ -31,7 +31,7 @@ func main() {
 
 	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
 		for _, handler := range inputHandlers {
-			captureOut, fired := handler(capture, &keyer, tui, cfg)
+			captureOut, fired := handler(capture, keyer, tui, cfg)
 			if fired {
 				return captureOut
 			}
