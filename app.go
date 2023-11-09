@@ -2,78 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
 )
-
-const (
-	initSpeed   = 18 // Moderate, what I use normally
-	minSpeed    = 5  // Very very slow
-	maxSpeed    = 50 // Very very fast
-	welcomeText = `[::b]Welcome to the K3GDS REKL[::-]
-
-[::i]Written by Scott K3GDS
-v0.1.3[::-]
-
-Enter "\help" for a list of supported commands.
-
-`
-	helpText = `
-A command should be entered as input with no additional text on the line.
-A hotkey can be used at any time without submitting the input field.
-Any other inputs will be sent as CW if all characters are sendable.
-    "\help"       COMMAND    Display this help text
-    "\quit"       COMMAND    Exit the program
-    "\clear"      COMMAND    Clear the display
-    "\speed"      COMMAND    Display the current WPM speed
-    "\speed N"    COMMAND    Set the CW speed to N WPM
-    [Up Arrow[]    HOTKEY     Increment the CW speed by 1 WPM   
-    [Down Arrow[]  HOTKEY     Decrement the CW speed by 1 WPM
-    "\stop"       COMMAND    Stop sending CW immediately
-    [ESC[]         HOTKEY     Stop sending CW immediately
-`
-)
-
-// config is a cwkeyer.SpeedProvider for the cwkeyer.Keyer.
-type config struct {
-	speed int
-}
-
-// newConfig returns a new Config.
-func newConfig() *config {
-	return &config{speed: initSpeed}
-}
-
-// Speed returns the current CW WPM speed.  Speed is
-// exported for the cwkeyer.SpeedProvider interface.
-func (cfg *config) Speed() int {
-	return cfg.speed
-}
-
-// setSpeed sets the current CW WPM speed.
-func (cfg *config) setSpeed(speed int) error {
-	if speed < minSpeed {
-		return fmt.Errorf("new speed is below minimum of %d", minSpeed)
-	}
-	if speed > maxSpeed {
-		return fmt.Errorf("new speed is above maximum of %d", maxSpeed)
-	}
-	cfg.speed = speed
-	return nil
-}
-
-// incrementSpeed raises the current CW WPM speed by one.
-func (cfg *config) incrementSpeed() error {
-	return cfg.setSpeed(cfg.Speed() + 1)
-}
-
-// decrementSpeed lowers the current CW WPM speed by one.
-func (cfg *config) decrementSpeed() error {
-	return cfg.setSpeed(cfg.Speed() - 1)
-}
 
 func main() {
 
@@ -92,15 +25,15 @@ func main() {
 		log.Fatalf("unable to create key: %s", err)
 	}
 
-	rekl := newConfig()
-	keyer := cwkeyer.New(rekl, key)
+	cfg := newConfig()
+	keyer := cwkeyer.New(cfg, key)
 	tui := newTUI()
 
 	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
 		for _, handler := range inputHandlers {
-			_, fired := handler(capture, &keyer, tui, rekl)
+			captureOut, fired := handler(capture, keyer, tui, cfg)
 			if fired {
-				return capture
+				return captureOut
 			}
 		}
 		return capture
