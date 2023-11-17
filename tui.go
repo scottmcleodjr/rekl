@@ -6,6 +6,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/scottmcleodjr/rekl/config"
 )
 
 type Level int
@@ -26,7 +27,7 @@ type tui struct {
 func newTUI() *tui {
 	eventView := tview.NewTextView()
 	eventView.SetDynamicColors(true).SetBorder(true)
-	eventView.Write([]byte(welcomeText)) // No timestamp on the welcome text
+	eventView.Write([]byte(config.WelcomeText)) // No timestamp on the welcome text
 
 	inputField := tview.NewInputField().SetLabel("Input:")
 	inputField.SetDrawFunc(func(screen tcell.Screen, x, y, width, height int) (int, int, int, int) {

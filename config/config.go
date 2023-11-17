@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	initSpeed   = 18 // Moderate, what I use normally
-	minSpeed    = 5  // Very very slow
-	maxSpeed    = 50 // Very very fast
-	welcomeText = `[::b]Welcome to the K3GDS REKL[::-]
+	InitSpeed   = 18 // Moderate, what I use normally
+	MinSpeed    = 5  // Very very slow
+	MaxSpeed    = 50 // Very very fast
+	WelcomeText = `[::b]Welcome to the K3GDS REKL[::-]
 
 [::i]Written by Scott K3GDS
 v0.2.1[::-]
@@ -20,7 +20,7 @@ v0.2.1[::-]
 Enter "\help" for a list of supported commands.
 
 `
-	helpText = `
+	HelpText = `
 A command should be entered as input with no additional text on the line.
 A hotkey can be used at any time without submitting the input field.
 Any other inputs will be sent as CW if all characters are sendable.
@@ -40,57 +40,58 @@ Any other inputs will be sent as CW if all characters are sendable.
 `
 )
 
-// config is a cwkeyer.SpeedProvider for the cwkeyer.Keyer.
-type config struct {
+// Config holds current configuration state for the REKL application.
+// Config is also the cwkeyer.SpeedProvider for the cwkeyer.Keyer.
+type Config struct {
 	speed    int
 	messages [10]string
 }
 
-// newConfig returns a new Config.
-func newConfig() *config {
-	return &config{speed: initSpeed}
+// New returns a new Config.
+func New() *Config {
+	return &Config{speed: InitSpeed}
 }
 
 // Speed returns the current CW WPM speed.  Speed is
 // exported for the cwkeyer.SpeedProvider interface.
-func (cfg *config) Speed() int {
+func (cfg *Config) Speed() int {
 	return cfg.speed
 }
 
-// setSpeed sets the current CW WPM speed.
-func (cfg *config) setSpeed(speed int) error {
-	if speed < minSpeed {
-		return fmt.Errorf("new speed is below minimum of %d", minSpeed)
+// SetSpeed sets the current CW WPM speed.
+func (cfg *Config) SetSpeed(speed int) error {
+	if speed < MinSpeed {
+		return fmt.Errorf("new speed is below minimum of %d", MinSpeed)
 	}
-	if speed > maxSpeed {
-		return fmt.Errorf("new speed is above maximum of %d", maxSpeed)
+	if speed > MaxSpeed {
+		return fmt.Errorf("new speed is above maximum of %d", MaxSpeed)
 	}
 	cfg.speed = speed
 	return nil
 }
 
-// incrementSpeed raises the current CW WPM speed by one.
-func (cfg *config) incrementSpeed() error {
-	return cfg.setSpeed(cfg.Speed() + 1)
+// IncrementSpeed raises the current CW WPM speed by one.
+func (cfg *Config) IncrementSpeed() error {
+	return cfg.SetSpeed(cfg.Speed() + 1)
 }
 
-// decrementSpeed lowers the current CW WPM speed by one.
-func (cfg *config) decrementSpeed() error {
-	return cfg.setSpeed(cfg.Speed() - 1)
+// DecrementSpeed lowers the current CW WPM speed by one.
+func (cfg *Config) DecrementSpeed() error {
+	return cfg.SetSpeed(cfg.Speed() - 1)
 }
 
-// message returns the message at position N or an empty
+// Message returns the message at position N or an empty
 // string if that message is not set.
-func (cfg *config) message(n int) (string, error) {
+func (cfg *Config) Message(n int) (string, error) {
 	if n < 0 || n > 9 {
 		return "", errors.New("message number out of range")
 	}
 	return cfg.messages[n], nil
 }
 
-// setMessage sets the message at position N to the string
+// SetMessage sets the message at position N to the string
 // message argument.
-func (cfg *config) setMessage(n int, message string) error {
+func (cfg *Config) SetMessage(n int, message string) error {
 	if n < 0 || n > 9 {
 		return errors.New("message number out of range")
 	}
@@ -104,14 +105,14 @@ func (cfg *config) setMessage(n int, message string) error {
 	return nil
 }
 
-// string returns the current configurations as a multiline string.
-func (cfg *config) string() string {
+// String returns the current configuration as a multiline String.
+func (cfg *Config) String() string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.speed))
 	sb.WriteString("Messages:\n")
 	for i := 1; i <= 10; i++ {
 		position := i % 10                  // Put 0 last like on a keyboard
-		message, _ := cfg.message(position) // Error is not reachable here
+		message, _ := cfg.Message(position) // Error is not reachable here
 		sb.WriteString(fmt.Sprintf("    %d: %s\n", position, message))
 	}
 	return sb.String()

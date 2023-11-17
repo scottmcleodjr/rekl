@@ -6,6 +6,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
+	"github.com/scottmcleodjr/rekl/config"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 		log.Fatalf("unable to create key: %s", err)
 	}
 
-	cfg := newConfig()
+	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
 	tui := newTUI()
 

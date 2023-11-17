@@ -8,9 +8,10 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
+	"github.com/scottmcleodjr/rekl/config"
 )
 
-type inputHandler func(*tcell.EventKey, *cwkeyer.Keyer, *tui, *config) (*tcell.EventKey, bool)
+type inputHandler func(*tcell.EventKey, *cwkeyer.Keyer, *tui, *config.Config) (*tcell.EventKey, bool)
 
 // inputHandlers is a slice of functions in a specific
 // order that handles input from the tui InputField.
@@ -30,38 +31,38 @@ var inputHandlers = []inputHandler{
 	cwHandler,             // This needs to be last
 }
 
-func speedIncrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func speedIncrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyUp {
-		err := cfg.incrementSpeed()
+		err := cfg.IncrementSpeed()
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 		}
-		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
+		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.Speed()))
 		return capture, true
 	}
 
 	return capture, false
 }
 
-func speedDecrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func speedDecrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyDown {
-		err := cfg.decrementSpeed()
+		err := cfg.DecrementSpeed()
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 		}
-		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
+		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.Speed()))
 		return capture, true
 	}
 
 	return capture, false
 }
 
-func speedHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func speedHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\speed" {
-		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is currently %d WPM.", cfg.speed))
+		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is currently %d WPM.", cfg.Speed()))
 		tui.inputField.SetText("")
 		return capture, true
 	}
@@ -69,7 +70,7 @@ func speedHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *
 	return capture, false
 }
 
-func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	var speedRegex = regexp.MustCompile(`^\\speed\s(\d+)$`)
 	speedMatch := speedRegex.FindStringSubmatch(tui.inputField.GetText())
@@ -81,11 +82,11 @@ func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cf
 			tui.inputField.SetText("")
 			return capture, true
 		}
-		err = cfg.setSpeed(newSpeed)
+		err = cfg.SetSpeed(newSpeed)
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 		}
-		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.speed))
+		tui.writeToEventView(levelInfo, fmt.Sprintf("The speed is now %d WPM.", cfg.Speed()))
 		tui.inputField.SetText("")
 		return capture, true
 	}
@@ -93,7 +94,7 @@ func speedSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cf
 	return capture, false
 }
 
-func messageSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func messageSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	var messageSetRegex = regexp.MustCompile(`^\\(\d)=(.*)$`)
 	messageSetMatch := messageSetRegex.FindStringSubmatch(tui.inputField.GetText())
@@ -105,14 +106,14 @@ func messageSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, 
 			return capture, true
 		}
 		message := messageSetMatch[2]
-		err = cfg.setMessage(messageNumber, message)
+		err = cfg.SetMessage(messageNumber, message)
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 			return capture, true
 		}
 
 		// Fetch it back from config so we get any formatting changes
-		formattedMessage, err := cfg.message(messageNumber)
+		formattedMessage, err := cfg.Message(messageNumber)
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 			return capture, true
@@ -128,13 +129,13 @@ func messageSetHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, 
 	return capture, false
 }
 
-func messageSendHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func messageSendHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	position := strings.IndexRune(")!@#$%^&*(", capture.Rune())
 	// Check the input field text so it won't just start
 	// sending if you try to use one of these in a message
 	if position != -1 && tui.inputField.GetText() == "" {
-		message, err := cfg.message(position)
+		message, err := cfg.Message(position)
 		if err != nil {
 			tui.writeToEventView(levelError, err.Error())
 			return nil, true
@@ -152,10 +153,10 @@ func messageSendHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui,
 	return capture, false
 }
 
-func configHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func configHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\config" {
-		tui.writeToEventView(levelInfo, cfg.string())
+		tui.writeToEventView(levelInfo, cfg.String())
 		tui.inputField.SetText("")
 		return capture, true
 	}
@@ -163,10 +164,10 @@ func configHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg 
 	return capture, false
 }
 
-func helpHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func helpHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\help" {
-		tui.writeToEventView(levelInfo, helpText)
+		tui.writeToEventView(levelInfo, config.HelpText)
 		tui.inputField.SetText("")
 		return capture, true
 	}
@@ -174,7 +175,7 @@ func helpHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *c
 	return capture, false
 }
 
-func quitHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func quitHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\quit" {
 		tui.app.Stop()
@@ -183,7 +184,7 @@ func quitHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *c
 	return capture, false
 }
 
-func clearHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func clearHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\clear" {
 		tui.eventView.Clear()
@@ -194,7 +195,7 @@ func clearHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *
 	return capture, false
 }
 
-func stopHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func stopHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEsc ||
 		(capture.Key() == tcell.KeyEnter && tui.inputField.GetText() == "\\stop") {
@@ -209,7 +210,7 @@ func stopHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *c
 	return capture, false
 }
 
-func unknownCommandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func unknownCommandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter && strings.HasPrefix(tui.inputField.GetText(), "\\") {
 		tui.writeToEventView(levelError, "unknown Command")
@@ -219,7 +220,7 @@ func unknownCommandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *t
 	return capture, false
 }
 
-func cwHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config) (*tcell.EventKey, bool) {
+func cwHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, tui *tui, cfg *config.Config) (*tcell.EventKey, bool) {
 
 	if capture.Key() == tcell.KeyEnter {
 		message := strings.ToUpper(tui.inputField.GetText())
