@@ -82,17 +82,17 @@ func (cfg *Config) DecrementSpeed() error {
 
 // Message returns the message at position N or an empty
 // string if that message is not set.
-func (cfg *Config) Message(n int) (string, error) {
-	if n < 0 || n > 9 {
+func (cfg *Config) Message(position int) (string, error) {
+	if position < 0 || position > 9 {
 		return "", errors.New("message number out of range")
 	}
-	return cfg.messages[n], nil
+	return cfg.messages[position], nil
 }
 
 // SetMessage sets the message at position N to the string
 // message argument.
-func (cfg *Config) SetMessage(n int, message string) error {
-	if n < 0 || n > 9 {
+func (cfg *Config) SetMessage(position int, message string) error {
+	if position < 0 || position > 9 {
 		return errors.New("message number out of range")
 	}
 	message = strings.ToUpper(strings.TrimSpace(message))
@@ -101,7 +101,7 @@ func (cfg *Config) SetMessage(n int, message string) error {
 			return fmt.Errorf("message contains unsupported rune %c", r)
 		}
 	}
-	cfg.messages[n] = message
+	cfg.messages[position] = message
 	return nil
 }
 
