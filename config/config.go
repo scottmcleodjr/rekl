@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/scottmcleodjr/cwkeyer"
 )
@@ -43,6 +44,7 @@ Any other inputs will be sent as CW if all characters are sendable.
 // Config holds current configuration state for the REKL application.
 // Config is also the cwkeyer.SpeedProvider for the cwkeyer.Keyer.
 type Config struct {
+	mu       sync.Mutex
 	speed    int
 	messages [10]string
 }
@@ -55,6 +57,8 @@ func New() *Config {
 // Speed returns the current CW WPM speed.  Speed is
 // exported for the cwkeyer.SpeedProvider interface.
 func (cfg *Config) Speed() int {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
 	return cfg.speed
 }
 
@@ -66,6 +70,8 @@ func (cfg *Config) SetSpeed(speed int) error {
 	if speed > MaxSpeed {
 		return fmt.Errorf("new speed is above maximum of %d", MaxSpeed)
 	}
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
 	cfg.speed = speed
 	return nil
 }
@@ -86,6 +92,8 @@ func (cfg *Config) Message(position int) (string, error) {
 	if position < 0 || position > 9 {
 		return "", errors.New("message number out of range")
 	}
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
 	return cfg.messages[position], nil
 }
 
@@ -101,6 +109,8 @@ func (cfg *Config) SetMessage(position int, message string) error {
 			return fmt.Errorf("message contains unsupported rune %c", r)
 		}
 	}
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
 	cfg.messages[position] = message
 	return nil
 }
@@ -108,7 +118,7 @@ func (cfg *Config) SetMessage(position int, message string) error {
 // String returns the current configuration as a multiline String.
 func (cfg *Config) String() string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.speed))
+	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.Speed()))
 	sb.WriteString("Messages:\n")
 	for i := 1; i <= 10; i++ {
 		position := i % 10                  // Put 0 last like on a keyboard
