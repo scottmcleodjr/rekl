@@ -7,6 +7,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
 	"github.com/scottmcleodjr/rekl/config"
+	"github.com/scottmcleodjr/rekl/tui"
 )
 
 func main() {
@@ -28,11 +29,11 @@ func main() {
 
 	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
-	tui := newTUI()
+	ui := tui.New()
 
-	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
+	ui.SetInputFieldCapture(func(capture *tcell.EventKey) *tcell.EventKey {
 		for _, handler := range inputHandlers {
-			captureOut, fired := handler(capture, keyer, tui, cfg)
+			captureOut, fired := handler(capture, keyer, ui, cfg)
 			if fired {
 				return captureOut
 			}
@@ -44,12 +45,12 @@ func main() {
 		for {
 			err := keyer.ProcessSendQueue(false)
 			if err != nil {
-				tui.writeToEventView(levelError, err.Error())
+				ui.WriteToEventView(tui.LevelError, err.Error())
 			}
 		}
 	}()
 
-	err = tui.app.Run()
+	err = ui.RunApp()
 	if err != nil {
 		log.Fatal(err)
 	}
