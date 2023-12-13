@@ -4,9 +4,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
 	"github.com/scottmcleodjr/rekl/config"
+	"github.com/scottmcleodjr/rekl/handlers"
 	"github.com/scottmcleodjr/rekl/tui"
 )
 
@@ -30,16 +30,7 @@ func main() {
 	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
 	ui := tui.New()
-
-	ui.SetInputFieldCapture(func(capture *tcell.EventKey) *tcell.EventKey {
-		for _, handler := range inputHandlers {
-			captureOut, fired := handler(capture, keyer, ui, cfg)
-			if fired {
-				return captureOut
-			}
-		}
-		return capture
-	})
+	ui.SetInputFieldCapture(handlers.InputHandler(keyer, ui, cfg))
 
 	go func() {
 		for {

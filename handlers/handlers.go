@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"fmt"
@@ -14,22 +14,32 @@ import (
 
 type inputHandler func(*tcell.EventKey, *cwkeyer.Keyer, *tui.TUI, *config.Config) (*tcell.EventKey, bool)
 
-// inputHandlers is a slice of functions in a specific
-// order that handles input from the tui InputField.
-var inputHandlers = []inputHandler{
-	speedIncrementHandler,
-	speedDecrementHandler,
-	speedSetHandler,
-	speedHandler,
-	messageSetHandler,
-	messageSendHandler,
-	configHandler,
-	helpHandler,
-	quitHandler,
-	clearHandler,
-	stopHandler,
-	unknownCommandHandler, // This needs to be second to last
-	cwHandler,             // This needs to be last
+// InputHandler processes user input to the TUI.  InputHandler accepts the Keyer,
+// TUI, and Config and returns a function to use as the TUI input field capture function.
+func InputHandler(keyer *cwkeyer.Keyer, ui *tui.TUI, cfg *config.Config) func(*tcell.EventKey) *tcell.EventKey {
+	return func(capture *tcell.EventKey) *tcell.EventKey {
+		for _, handler := range []inputHandler{
+			speedIncrementHandler,
+			speedDecrementHandler,
+			speedSetHandler,
+			speedHandler,
+			messageSetHandler,
+			messageSendHandler,
+			configHandler,
+			helpHandler,
+			quitHandler,
+			clearHandler,
+			stopHandler,
+			unknownCommandHandler, // This needs to be second to last
+			cwHandler,             // This needs to be last
+		} {
+			captureOut, fired := handler(capture, keyer, ui, cfg)
+			if fired {
+				return captureOut
+			}
+		}
+		return capture
+	}
 }
 
 func speedIncrementHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui *tui.TUI, cfg *config.Config) (*tcell.EventKey, bool) {
