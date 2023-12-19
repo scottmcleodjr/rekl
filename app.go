@@ -6,7 +6,7 @@ import (
 
 	"github.com/scottmcleodjr/cwkeyer"
 	"github.com/scottmcleodjr/rekl/config"
-	"github.com/scottmcleodjr/rekl/handlers"
+	"github.com/scottmcleodjr/rekl/handler"
 	"github.com/scottmcleodjr/rekl/tui"
 )
 
@@ -30,7 +30,7 @@ func main() {
 	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
 	ui := tui.New()
-	ui.SetInputFieldCapture(handlers.InputHandler(keyer, ui, cfg))
+	ui.SetInputFieldCapture(handler.InputHandler(keyer, ui, cfg))
 
 	go func() {
 		for {
