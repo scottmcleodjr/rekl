@@ -34,9 +34,8 @@ Any other inputs will be sent as CW if all characters are sendable.
     "\speed N"    COMMAND    Set the CW speed to N WPM
     [Up Arrow]    HOTKEY     Increment the CW speed by 1 WPM
     [Down Arrow]  HOTKEY     Decrement the CW speed by 1 WPM
-	"\N=..."      COMMAND    Save a message at memory position N
+	"\N ..."      COMMAND    Save a message at memory position N
 	[Shift+N]     HOTKEY     Send the message at memory position N
-    "\stop"       COMMAND    Stop sending CW immediately
     [ESC[]         HOTKEY     Stop sending CW immediately
 `
 )
