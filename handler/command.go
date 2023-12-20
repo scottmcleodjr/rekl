@@ -12,11 +12,11 @@ import (
 )
 
 func commandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterface, cfg *config.Config) bool {
-	if !(capture.Key() == tcell.KeyEnter && strings.HasPrefix(ui.InputFieldText(), "\\")) {
+	if !(capture.Key() == tcell.KeyEnter && strings.HasPrefix(ui.InputText(), "\\")) {
 		return false
 	}
 
-	splitInput := strings.SplitN(ui.InputFieldText(), " ", 2)
+	splitInput := strings.SplitN(ui.InputText(), " ", 2)
 	command := splitInput[0]
 	var commandArg string
 	if len(splitInput) > 1 {
@@ -47,18 +47,18 @@ func commandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterf
 	case "\\0":
 		handleMessageSetCommand(ui, cfg, 0, commandArg)
 	case "\\config":
-		ui.WriteToEventView(tui.LevelInfo, cfg.String())
-		ui.ClearInputField()
+		ui.WriteEvent(tui.LevelInfo, cfg.String())
+		ui.ClearInputText()
 	case "\\help":
-		ui.WriteToEventView(tui.LevelInfo, config.HelpText)
-		ui.ClearInputField()
+		ui.WriteEvent(tui.LevelInfo, config.HelpText)
+		ui.ClearInputText()
 	case "\\clear":
-		ui.ClearEventView()
-		ui.ClearInputField()
+		ui.ClearEvents()
+		ui.ClearInputText()
 	case "\\quit":
 		ui.StopApp()
 	default:
-		ui.WriteToEventView(tui.LevelError, "unknown Command")
+		ui.WriteEvent(tui.LevelError, "unknown Command")
 	}
 
 	return true
@@ -68,30 +68,30 @@ func handleSpeedCommand(ui UserInterface, cfg *config.Config, arg string) {
 	if arg != "" {
 		newSpeed, err := strconv.Atoi(arg)
 		if err != nil {
-			ui.WriteToEventView(tui.LevelError, "unable to parse speed argument")
+			ui.WriteEvent(tui.LevelError, "unable to parse speed argument")
 			return
 		}
 
 		err = cfg.SetSpeed(newSpeed)
 		if err != nil {
-			ui.WriteToEventView(tui.LevelError, err.Error())
+			ui.WriteEvent(tui.LevelError, err.Error())
 		}
 	}
 
-	ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
-	ui.ClearInputField()
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.ClearInputText()
 }
 
 func handleMessageSetCommand(ui UserInterface, cfg *config.Config, position int, arg string) {
 	err := cfg.SetMessage(position, arg)
 	if err != nil {
-		ui.WriteToEventView(tui.LevelError, err.Error())
+		ui.WriteEvent(tui.LevelError, err.Error())
 		return
 	}
 
 	// Fetch it back from config so we get any formatting changes
 	// Ignore err because we just set this message, will be nil
 	message, _ := cfg.Message(position)
-	ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("Saved message %d: %s", position, message))
-	ui.ClearInputField()
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("Saved message %d: %s", position, message))
+	ui.ClearInputText()
 }

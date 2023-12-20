@@ -30,13 +30,13 @@ func main() {
 	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
 	ui := tui.New()
-	ui.SetInputFieldCapture(handler.InputHandler(keyer, ui, cfg))
+	ui.SetInputCapture(handler.InputHandler(keyer, ui, cfg))
 
 	go func() {
 		for {
 			err := keyer.ProcessSendQueue(false)
 			if err != nil {
-				ui.WriteToEventView(tui.LevelError, err.Error())
+				ui.WriteEvent(tui.LevelError, err.Error())
 			}
 		}
 	}()

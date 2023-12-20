@@ -12,10 +12,10 @@ import (
 
 // UserInterface is an interface of the TUI methods used by InputHandler.
 type UserInterface interface {
-	WriteToEventView(level tui.Level, message string)
-	ClearEventView()
-	InputFieldText() string
-	ClearInputField()
+	WriteEvent(level tui.Level, message string)
+	ClearEvents()
+	InputText() string
+	ClearInputText()
 	StopApp()
 }
 
@@ -33,14 +33,14 @@ func InputHandler(keyer *cwkeyer.Keyer, ui UserInterface, cfg *config.Config) fu
 		}
 
 		if capture.Key() == tcell.KeyEnter {
-			message := strings.ToUpper(ui.InputFieldText())
+			message := strings.ToUpper(ui.InputText())
 			err := keyer.QueueMessage(message)
 			if err != nil {
-				ui.WriteToEventView(tui.LevelError, err.Error())
+				ui.WriteEvent(tui.LevelError, err.Error())
 				return capture
 			}
-			ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("Sending: %s", message))
-			ui.ClearInputField()
+			ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("Sending: %s", message))
+			ui.ClearInputText()
 		}
 
 		return capture

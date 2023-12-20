@@ -51,10 +51,10 @@ func New() *TUI {
 	}
 }
 
-// WriteToEventView writes messages to the event view.
-// WriteToEventView prepends a UTC timestamp and a short line
+// WriteEvent writes messages to the event view.
+// WriteEvent prepends a UTC timestamp and a short line
 // prefix indicating if the message is information or an error.
-func (t *TUI) WriteToEventView(level Level, message string) {
+func (t *TUI) WriteEvent(level Level, message string) {
 	utcTime := time.Now().UTC()
 	var linePrefix string
 	switch level {
@@ -67,23 +67,23 @@ func (t *TUI) WriteToEventView(level Level, message string) {
 	t.eventView.Write([]byte(line))
 }
 
-// ClearEventView removes all text from the event view.
-func (t *TUI) ClearEventView() {
+// ClearEvents removes all text from the event view.
+func (t *TUI) ClearEvents() {
 	t.eventView.Clear()
 }
 
-// InputFieldText returns the current content of the input field.
-func (t *TUI) InputFieldText() string {
+// InputText returns the current content of the input field.
+func (t *TUI) InputText() string {
 	return t.inputField.GetText()
 }
 
-// ClearInputField clears the current content of the input field.
-func (t *TUI) ClearInputField() {
+// ClearInputText clears the current content of the input field.
+func (t *TUI) ClearInputText() {
 	t.inputField.SetText("")
 }
 
-// SetInputFieldCapture sets the capture function for key events in the input field.
-func (t *TUI) SetInputFieldCapture(captureFunc func(capture *tcell.EventKey) *tcell.EventKey) {
+// SetInputCapture sets the capture function for key events in the input field.
+func (t *TUI) SetInputCapture(captureFunc func(capture *tcell.EventKey) *tcell.EventKey) {
 	t.inputField.SetInputCapture(captureFunc)
 }
 

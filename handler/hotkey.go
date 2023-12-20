@@ -24,7 +24,7 @@ func hotkeyHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterfa
 	}
 
 	position := strings.IndexRune(")!@#$%^&*(", capture.Rune())
-	if ui.InputFieldText() == "" && position != -1 {
+	if ui.InputText() == "" && position != -1 {
 		sendMessage(keyer, ui, cfg, position)
 		return true
 	}
@@ -35,35 +35,35 @@ func hotkeyHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterfa
 func incrementSpeed(ui UserInterface, cfg *config.Config) {
 	err := cfg.IncrementSpeed()
 	if err != nil {
-		ui.WriteToEventView(tui.LevelError, err.Error())
+		ui.WriteEvent(tui.LevelError, err.Error())
 	}
-	ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
 }
 
 func decrementSpeed(ui UserInterface, cfg *config.Config) {
 	err := cfg.DecrementSpeed()
 	if err != nil {
-		ui.WriteToEventView(tui.LevelError, err.Error())
+		ui.WriteEvent(tui.LevelError, err.Error())
 	}
-	ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
 }
 
 func stopCW(keyer *cwkeyer.Keyer, ui UserInterface) {
 	keyer.DrainSendQueue()
-	ui.WriteToEventView(tui.LevelInfo, "All messages stopped.")
+	ui.WriteEvent(tui.LevelInfo, "All messages stopped.")
 }
 
 func sendMessage(keyer *cwkeyer.Keyer, ui UserInterface, cfg *config.Config, position int) {
 	message, err := cfg.Message(position)
 	if err != nil {
-		ui.WriteToEventView(tui.LevelError, err.Error())
+		ui.WriteEvent(tui.LevelError, err.Error())
 		return
 	}
 
 	err = keyer.QueueMessage(message)
 	if err != nil {
-		ui.WriteToEventView(tui.LevelError, err.Error())
+		ui.WriteEvent(tui.LevelError, err.Error())
 		return
 	}
-	ui.WriteToEventView(tui.LevelInfo, fmt.Sprintf("Sending: %s", message))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("Sending: %s", message))
 }
