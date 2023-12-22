@@ -28,10 +28,10 @@ func TestSetSpeed(t *testing.T) {
 			t.Errorf("got %d, want %d for speed", speed, test.speedWanted)
 		}
 		if test.errorWanted && (err == nil) {
-			t.Error("got nil, want error after setting speed.")
+			t.Error("got nil, want error after setting speed")
 		}
 		if !test.errorWanted && (err != nil) {
-			t.Error("got error, want nil after setting speed.")
+			t.Error("got error, want nil after setting speed")
 		}
 	}
 }
@@ -49,14 +49,14 @@ func TestIncrementSpeed(t *testing.T) {
 
 		speed := cfg.Speed()
 		if speed != expectedSpeed {
-			t.Errorf("got %d, want %d for speed after IncrementSpeed.", speed, expectedSpeed)
+			t.Errorf("got %d, want %d for speed after IncrementSpeed", speed, expectedSpeed)
 		}
 	}
 
 	// We broke from loop: err was not nil, speed should be at Max
 	speed := cfg.Speed()
 	if speed != config.MaxSpeed {
-		t.Errorf("got %d, want %d for speed after IncrementSpeed returned error.", speed, config.MaxSpeed)
+		t.Errorf("got %d, want %d for speed after IncrementSpeed returned error", speed, config.MaxSpeed)
 	}
 }
 
@@ -73,14 +73,14 @@ func TestDecrementSpeed(t *testing.T) {
 
 		speed := cfg.Speed()
 		if speed != expectedSpeed {
-			t.Errorf("got %d, want %d for speed after DecrementSpeed.", speed, expectedSpeed)
+			t.Errorf("got %d, want %d for speed after DecrementSpeed", speed, expectedSpeed)
 		}
 	}
 
 	// We broke from loop: err was not nil, speed should be at Min
 	speed := cfg.Speed()
 	if speed != config.MinSpeed {
-		t.Errorf("got %d, want %d for speed after DecrementSpeed returned error.", speed, config.MinSpeed)
+		t.Errorf("got %d, want %d for speed after DecrementSpeed returned error", speed, config.MinSpeed)
 	}
 }
 
@@ -103,10 +103,10 @@ func TestMessage(t *testing.T) {
 		cfg := config.New()
 		_, err := cfg.Message(test.position)
 		if test.errorWanted && (err == nil) {
-			t.Errorf("got nil, want error getting message %d.", test.position)
+			t.Errorf("got nil, want error getting message %d", test.position)
 		}
 		if !test.errorWanted && (err != nil) {
-			t.Errorf("got error, want nil getting message %d.", test.position)
+			t.Errorf("got error, want nil getting message %d", test.position)
 		}
 	}
 }
@@ -133,10 +133,10 @@ func TestSetMessage(t *testing.T) {
 	for _, input := range inputs {
 		err := cfg.SetMessage(input.position, input.message)
 		if input.errorWanted && (err == nil) {
-			t.Errorf("got nil, want error after setting message %d.", input.position)
+			t.Errorf("got nil, want error after setting message %d", input.position)
 		}
 		if !input.errorWanted && (err != nil) {
-			t.Errorf("got error, want nil after setting message %d.", input.position)
+			t.Errorf("got error, want nil after setting message %d", input.position)
 		}
 	}
 
@@ -150,10 +150,10 @@ func TestSetMessage(t *testing.T) {
 		got, err := cfg.Message(position)
 		want := expectedMessages[position]
 		if got != want {
-			t.Errorf("got %q, want %q after getting test messages.", got, want)
+			t.Errorf("got %q, want %q after getting test messages", got, want)
 		}
 		if err != nil {
-			t.Errorf("got error, want nil getting message %d.", position)
+			t.Errorf("got error, want nil getting message %d", position)
 		}
 	}
 }
