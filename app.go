@@ -31,6 +31,7 @@ func main() {
 	keyer := cwkeyer.New(cfg, key)
 	ui := tui.New()
 	ui.SetInputCapture(handler.InputHandler(keyer, ui, cfg))
+	ui.WriteEvent(tui.LevelInfo, config.WelcomeText)
 
 	go func() {
 		for {
