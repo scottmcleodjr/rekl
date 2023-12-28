@@ -1,24 +1,34 @@
-APPNAME  = rekl
-SRC      = $(wildcard *.go)
-BINDIR   = bin
+SHELL = /bin/sh
 
-.PHONY: all build run beep clean
+app_name  = rekl
+main_file = app.go
+src_files = $(wildcard *.go) $(wildcard */*.go) go.mod go.sum
+bin_dir   = bin
 
 all: build
+.PHONY: all
 
-build: $(BINDIR) $(BINDIR)/$(APPNAME)
+build: $(bin_dir) $(bin_dir)/$(app_name)
+.PHONY: build
 
 run: build
-	$(BINDIR)/$(APPNAME)
+	$(bin_dir)/$(app_name)
+.PHONY: run
 
 beep: build
-	$(BINDIR)/$(APPNAME) -beep
+	$(bin_dir)/$(app_name) -beep
+.PHONY: beep
 
 clean:
-	rm -rf ${BINDIR}
+	rm -rf ${bin_dir}
+.PHONY: clean
 
-$(BINDIR):
+test:
+	go test -v -cover -race ./...
+.PHONY: test
+
+$(bin_dir):
 	mkdir -p $@
 
-$(BINDIR)/$(APPNAME): $(BINDIR) $(SRC) go.mod go.sum
-	go build -o $@ $(SRC)
+$(bin_dir)/$(app_name): $(bin_dir) $(src_files)
+	go build -o $@ $(main_file)

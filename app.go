@@ -4,8 +4,10 @@ import (
 	"flag"
 	"log"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/scottmcleodjr/cwkeyer"
+	"github.com/scottmcleodjr/rekl/config"
+	"github.com/scottmcleodjr/rekl/handler"
+	"github.com/scottmcleodjr/rekl/tui"
 )
 
 func main() {
@@ -25,30 +27,22 @@ func main() {
 		log.Fatalf("unable to create key: %s", err)
 	}
 
-	cfg := newConfig()
+	cfg := config.New()
 	keyer := cwkeyer.New(cfg, key)
-	tui := newTUI()
-
-	tui.inputField.SetInputCapture(func(capture *tcell.EventKey) *tcell.EventKey {
-		for _, handler := range inputHandlers {
-			captureOut, fired := handler(capture, keyer, tui, cfg)
-			if fired {
-				return captureOut
-			}
-		}
-		return capture
-	})
+	ui := tui.New()
+	ui.SetInputCapture(handler.InputHandler(keyer, ui, cfg))
+	ui.WriteEvent(tui.LevelInfo, config.WelcomeText)
 
 	go func() {
 		for {
 			err := keyer.ProcessSendQueue(false)
 			if err != nil {
-				tui.writeToEventView(levelError, err.Error())
+				ui.WriteEvent(tui.LevelError, err.Error())
 			}
 		}
 	}()
 
-	err = tui.app.Run()
+	err = ui.RunApp()
 	if err != nil {
 		log.Fatal(err)
 	}
