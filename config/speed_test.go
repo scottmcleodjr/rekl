@@ -25,14 +25,13 @@ func TestSpeed_Set(t *testing.T) {
 			s := config.NewSpeed()
 			err := s.Set(tt.input)
 
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
 			if got := s.WPM(); got != tt.want {
 				t.Errorf("WPM() = %d, want %d", got, tt.want)
-			}
-			if tt.wantErr && err == nil {
-				t.Errorf("Set(%d) = %v, want error", tt.input, err)
-			}
-			if !tt.wantErr && err != nil {
-				t.Errorf("Set(%d) = %v, want nil", tt.input, err)
 			}
 		})
 	}
@@ -47,7 +46,7 @@ func TestSpeed_Increment(t *testing.T) {
 
 		err := s.Increment()
 		if err != nil {
-			t.Fatalf("at %d WPM, Increment() = %v, want nil", startWPM, err)
+			t.Fatalf("at %d WPM, Increment() error = %v, want nil", startWPM, err)
 		}
 
 		want := startWPM + 1
@@ -64,7 +63,7 @@ func TestSpeed_Increment(t *testing.T) {
 	// Incrementing past max should error and not change speed
 	err := s.Increment()
 	if err == nil {
-		t.Errorf("at %d WPM, Increment() = nil, want error", config.MaxWPM)
+		t.Errorf("at %d WPM, Increment() error = nil, want error", config.MaxWPM)
 	}
 
 	if got := s.WPM(); got != config.MaxWPM {
@@ -81,7 +80,7 @@ func TestSpeed_Decrement(t *testing.T) {
 
 		err := s.Decrement()
 		if err != nil {
-			t.Fatalf("at %d WPM, Decrement() = %v, want nil", startWPM, err)
+			t.Fatalf("at %d WPM, Decrement() error = %v, want nil", startWPM, err)
 		}
 
 		want := startWPM - 1
@@ -98,7 +97,7 @@ func TestSpeed_Decrement(t *testing.T) {
 	// Decrementing past min should error and not change speed
 	err := s.Decrement()
 	if err == nil {
-		t.Errorf("at %d WPM, Decrement() = nil, want error", config.MinWPM)
+		t.Errorf("at %d WPM, Decrement() error = nil, want error", config.MinWPM)
 	}
 
 	if got := s.WPM(); got != config.MinWPM {
