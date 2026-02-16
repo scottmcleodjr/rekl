@@ -11,47 +11,47 @@ import (
 
 func TestSpeedIncrement(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
 	// Increase speed from initial speed
 	inputHandler(upKey)
-	if cfg.Speed() != config.InitSpeed+1 {
-		t.Errorf("got %d, want %d when incrementing from InitSpeed", cfg.Speed(), config.InitSpeed+1)
+	if cfg.Speed.WPM() != config.InitialWPM+1 {
+		t.Errorf("got %d, want %d when incrementing from InitSpeed", cfg.Speed.WPM(), config.InitialWPM+1)
 	}
 
 	// Does not increase from limit
-	cfg.SetSpeed(config.MaxSpeed)
+	cfg.Speed.Set(config.MaxWPM)
 	inputHandler(upKey)
-	if cfg.Speed() != config.MaxSpeed {
-		t.Errorf("got %d, want %d when incrementing from MaxSpeed", cfg.Speed(), config.MaxSpeed)
+	if cfg.Speed.WPM() != config.MaxWPM {
+		t.Errorf("got %d, want %d when incrementing from cfg.MaxCWSpeed", cfg.Speed.WPM(), config.MaxWPM)
 	}
 }
 
 func TestSpeedDecrement(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
 	// Decrease speed from initial speed
 	inputHandler(downKey)
-	if cfg.Speed() != config.InitSpeed-1 {
-		t.Errorf("got %d, want %d when decrementing from InitSpeed", cfg.Speed(), config.InitSpeed-1)
+	if cfg.Speed.WPM() != config.InitialWPM-1 {
+		t.Errorf("got %d, want %d when decrementing from InitSpeed", cfg.Speed.WPM(), config.InitialWPM-1)
 	}
 
 	// Does not decrease from limit
-	cfg.SetSpeed(config.MinSpeed)
+	cfg.Speed.Set(config.MinWPM)
 	inputHandler(downKey)
-	if cfg.Speed() != config.MinSpeed {
-		t.Errorf("got %d, want %d when decrementing from MaxSpeed", cfg.Speed(), config.MinSpeed)
+	if cfg.Speed.WPM() != config.MinWPM {
+		t.Errorf("got %d, want %d when decrementing from cfg.MaxCWSpeed", cfg.Speed.WPM(), config.MinWPM)
 	}
 }
 
 func TestStopCW(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
@@ -82,7 +82,7 @@ func TestMessageSend(t *testing.T) {
 
 	for _, test := range tests {
 		cfg := config.New()
-		keyer := cwkeyer.New(cfg, testKey{})
+		keyer := cwkeyer.New(cfg.Speed, testKey{})
 		ui := &testUI{}
 		inputHandler := handler.InputHandler(keyer, ui, cfg)
 

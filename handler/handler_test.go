@@ -19,7 +19,7 @@ func TestCWSend(t *testing.T) {
 
 	for _, test := range tests {
 		cfg := config.New()
-		keyer := cwkeyer.New(cfg, testKey{})
+		keyer := cwkeyer.New(cfg.Speed, testKey{})
 		ui := &testUI{}
 		inputHandler := handler.InputHandler(keyer, ui, cfg)
 

@@ -72,13 +72,13 @@ func handleSpeedCommand(ui UserInterface, cfg *config.Config, arg string) {
 			return
 		}
 
-		err = cfg.SetSpeed(newSpeed)
+		err = cfg.Speed.Set(newSpeed)
 		if err != nil {
 			ui.WriteEvent(tui.LevelError, err.Error())
 		}
 	}
 
-	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed.WPM()))
 	ui.ClearInputText()
 }
 

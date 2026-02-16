@@ -10,9 +10,6 @@ import (
 )
 
 const (
-	InitSpeed   = 18 // Moderate, what I use normally
-	MinSpeed    = 5  // Very very slow
-	MaxSpeed    = 50 // Very very fast
 	WelcomeText = `[::b]Welcome to the K3GDS REKL[::-]
 
 [::i]Written by Scott K3GDS
@@ -41,48 +38,15 @@ Any other inputs will be sent as CW if all characters are sendable.
 )
 
 // Config holds current configuration state for the REKL application.
-// Config is also the cwkeyer.SpeedProvider for the cwkeyer.Keyer.
 type Config struct {
 	mu       sync.Mutex
-	speed    int
+	Speed    *Speed
 	messages [10]string
 }
 
 // New returns a new Config.
 func New() *Config {
-	return &Config{speed: InitSpeed}
-}
-
-// Speed returns the current CW WPM speed.  Speed is
-// exported for the cwkeyer.SpeedProvider interface.
-func (cfg *Config) Speed() int {
-	cfg.mu.Lock()
-	defer cfg.mu.Unlock()
-	return cfg.speed
-}
-
-// SetSpeed sets the current CW WPM speed.
-func (cfg *Config) SetSpeed(speed int) error {
-	if speed < MinSpeed {
-		return fmt.Errorf("new speed is below minimum of %d", MinSpeed)
-	}
-	if speed > MaxSpeed {
-		return fmt.Errorf("new speed is above maximum of %d", MaxSpeed)
-	}
-	cfg.mu.Lock()
-	defer cfg.mu.Unlock()
-	cfg.speed = speed
-	return nil
-}
-
-// IncrementSpeed raises the current CW WPM speed by one.
-func (cfg *Config) IncrementSpeed() error {
-	return cfg.SetSpeed(cfg.Speed() + 1)
-}
-
-// DecrementSpeed lowers the current CW WPM speed by one.
-func (cfg *Config) DecrementSpeed() error {
-	return cfg.SetSpeed(cfg.Speed() - 1)
+	return &Config{Speed: NewSpeed()}
 }
 
 // Message returns the message at position N or an empty
@@ -117,7 +81,7 @@ func (cfg *Config) SetMessage(position int, message string) error {
 // String returns the current configuration as a multiline String.
 func (cfg *Config) String() string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.Speed()))
+	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.Speed.WPM()))
 	sb.WriteString("Messages:\n")
 	for i := 1; i <= 10; i++ {
 		position := i % 10                  // Put 0 last like on a keyboard

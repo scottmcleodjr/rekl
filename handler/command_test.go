@@ -15,21 +15,21 @@ func TestSpeedCommand(t *testing.T) {
 		input int
 		want  int
 	}{
-		{input: 30, want: 30},               // Valid speed
-		{input: 1, want: config.InitSpeed},  // Too low
-		{input: 99, want: config.InitSpeed}, // Too high
+		{input: 30, want: 30},                // Valid speed
+		{input: 1, want: config.InitialWPM},  // Too low
+		{input: 99, want: config.InitialWPM}, // Too high
 	}
 
 	for _, test := range tests {
 		cfg := config.New()
-		keyer := cwkeyer.New(cfg, testKey{})
+		keyer := cwkeyer.New(cfg.Speed, testKey{})
 		ui := &testUI{}
 		inputHandler := handler.InputHandler(keyer, ui, cfg)
 
 		ui.inputFieldText = fmt.Sprintf("\\speed %d", test.input)
 		inputHandler(enterKey)
-		if cfg.Speed() != test.want {
-			t.Errorf("got %d, want %d after setting speed to %d", cfg.Speed(), test.want, test.input)
+		if cfg.Speed.WPM() != test.want {
+			t.Errorf("got %d, want %d after setting speed to %d", cfg.Speed.WPM(), test.want, test.input)
 		}
 	}
 }
@@ -54,7 +54,7 @@ func TestMessageSet(t *testing.T) {
 
 	for _, test := range tests {
 		cfg := config.New()
-		keyer := cwkeyer.New(cfg, testKey{})
+		keyer := cwkeyer.New(cfg.Speed, testKey{})
 		ui := &testUI{}
 		inputHandler := handler.InputHandler(keyer, ui, cfg)
 
@@ -69,7 +69,7 @@ func TestMessageSet(t *testing.T) {
 
 func TestConfig(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
@@ -83,7 +83,7 @@ func TestConfig(t *testing.T) {
 
 func TestHelp(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
@@ -97,7 +97,7 @@ func TestHelp(t *testing.T) {
 
 func TestClear(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
@@ -113,7 +113,7 @@ func TestClear(t *testing.T) {
 
 func TestQuit(t *testing.T) {
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, testKey{})
+	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 

@@ -33,19 +33,19 @@ func hotkeyHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterfa
 }
 
 func incrementSpeed(ui UserInterface, cfg *config.Config) {
-	err := cfg.IncrementSpeed()
+	err := cfg.Speed.Increment()
 	if err != nil {
 		ui.WriteEvent(tui.LevelError, err.Error())
 	}
-	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed.WPM()))
 }
 
 func decrementSpeed(ui UserInterface, cfg *config.Config) {
-	err := cfg.DecrementSpeed()
+	err := cfg.Speed.Decrement()
 	if err != nil {
 		ui.WriteEvent(tui.LevelError, err.Error())
 	}
-	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed()))
+	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("The CW speed is %d WPM.", cfg.Speed.WPM()))
 }
 
 func stopCW(keyer *cwkeyer.Keyer, ui UserInterface) {

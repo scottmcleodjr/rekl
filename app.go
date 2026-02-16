@@ -28,7 +28,7 @@ func main() {
 	}
 
 	cfg := config.New()
-	keyer := cwkeyer.New(cfg, key)
+	keyer := cwkeyer.New(cfg.Speed, key)
 	ui := tui.New()
 	ui.SetInputCapture(handler.InputHandler(keyer, ui, cfg))
 	ui.WriteEvent(tui.LevelInfo, config.WelcomeText)
