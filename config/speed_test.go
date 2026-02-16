@@ -6,80 +6,102 @@ import (
 	"github.com/scottmcleodjr/rekl/config"
 )
 
-func TestSet(t *testing.T) {
+func TestSpeed_Set(t *testing.T) {
 	tests := []struct {
-		input       int
-		speedWanted int
-		errorWanted bool
+		name    string
+		input   int
+		want    int
+		wantErr bool
 	}{
-		{input: 15, speedWanted: 15, errorWanted: false},
-		{input: config.MinWPM, speedWanted: config.MinWPM, errorWanted: false},
-		{input: config.MaxWPM, speedWanted: config.MaxWPM, errorWanted: false},
-		{input: 1, speedWanted: config.InitialWPM, errorWanted: true},
-		{input: 150, speedWanted: config.InitialWPM, errorWanted: true},
+		{name: "valid WPM", input: 15, want: 15, wantErr: false},
+		{name: "minimum WPM", input: config.MinWPM, want: config.MinWPM, wantErr: false},
+		{name: "maximum WPM", input: config.MaxWPM, want: config.MaxWPM, wantErr: false},
+		{name: "below minimum", input: 1, want: config.InitialWPM, wantErr: true},
+		{name: "above maximum", input: 150, want: config.InitialWPM, wantErr: true},
 	}
 
-	for _, test := range tests {
-		s := config.NewSpeed()
-		err := s.Set(test.input)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := config.NewSpeed()
+			err := s.Set(tt.input)
 
-		speed := s.WPM()
-		if speed != test.speedWanted {
-			t.Errorf("got %d, want %d for speed", speed, test.speedWanted)
-		}
-		if test.errorWanted && (err == nil) {
-			t.Error("got nil, want error after setting speed")
-		}
-		if !test.errorWanted && (err != nil) {
-			t.Error("got error, want nil after setting speed")
-		}
+			if got := s.WPM(); got != tt.want {
+				t.Errorf("WPM() = %d, want %d", got, tt.want)
+			}
+			if tt.wantErr && err == nil {
+				t.Errorf("Set(%d) = %v, want error", tt.input, err)
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("Set(%d) = %v, want nil", tt.input, err)
+			}
+		})
 	}
 }
 
-func TestIncrement(t *testing.T) {
+func TestSpeed_Increment(t *testing.T) {
 	s := config.NewSpeed()
-	expectedSpeed := config.InitialWPM
 
+	// Increment from initial to max
 	for {
+		startWPM := s.WPM()
+
 		err := s.Increment()
-		expectedSpeed++
 		if err != nil {
-			break
+			t.Fatalf("at %d WPM, Increment() = %v, want nil", startWPM, err)
 		}
 
-		speed := s.WPM()
-		if speed != expectedSpeed {
-			t.Errorf("got %d, want %d for speed after IncrementSpeed", speed, expectedSpeed)
+		want := startWPM + 1
+		got := s.WPM()
+		if got != want {
+			t.Errorf("after Increment(), WPM() = %d, want %d", got, want)
+		}
+
+		if got == config.MaxWPM {
+			break
 		}
 	}
 
-	// We broke from loop: err was not nil, speed should be at Max
-	speed := s.WPM()
-	if speed != config.MaxWPM {
-		t.Errorf("got %d, want %d for speed after IncrementSpeed returned error", speed, config.MaxWPM)
+	// Incrementing past max should error and not change speed
+	err := s.Increment()
+	if err == nil {
+		t.Errorf("at %d WPM, Increment() = nil, want error", config.MaxWPM)
+	}
+
+	if got := s.WPM(); got != config.MaxWPM {
+		t.Errorf("after Increment(), WPM() = %d, want %d (unchanged value after error)", got, config.MaxWPM)
 	}
 }
 
-func TestDecrement(t *testing.T) {
+func TestSpeed_Decrement(t *testing.T) {
 	s := config.NewSpeed()
-	expectedSpeed := config.InitialWPM
 
+	// Decrement from initial to min
 	for {
+		startWPM := s.WPM()
+
 		err := s.Decrement()
-		expectedSpeed--
 		if err != nil {
-			break
+			t.Fatalf("at %d WPM, Decrement() = %v, want nil", startWPM, err)
 		}
 
-		speed := s.WPM()
-		if speed != expectedSpeed {
-			t.Errorf("got %d, want %d for speed after DecrementSpeed", speed, expectedSpeed)
+		want := startWPM - 1
+		got := s.WPM()
+		if got != want {
+			t.Errorf("after Decrement(), WPM() = %d, want %d", got, want)
+		}
+
+		if got == config.MinWPM {
+			break
 		}
 	}
 
-	// We broke from loop: err was not nil, speed should be at Min
-	speed := s.WPM()
-	if speed != config.MinWPM {
-		t.Errorf("got %d, want %d for speed after DecrementSpeed returned error", speed, config.MinWPM)
+	// Decrementing past min should error and not change speed
+	err := s.Decrement()
+	if err == nil {
+		t.Errorf("at %d WPM, Decrement() = nil, want error", config.MinWPM)
+	}
+
+	if got := s.WPM(); got != config.MinWPM {
+		t.Errorf("after Decrement(), WPM() = %d, want %d (unchanged value after error)", got, config.MinWPM)
 	}
 }
