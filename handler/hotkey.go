@@ -54,7 +54,7 @@ func stopCW(keyer *cwkeyer.Keyer, ui UserInterface) {
 }
 
 func sendMessage(keyer *cwkeyer.Keyer, ui UserInterface, cfg *config.Config, position int) {
-	message, err := cfg.Message(position)
+	message, err := cfg.Messages.At(position)
 	if err != nil {
 		ui.WriteEvent(tui.LevelError, err.Error())
 		return

@@ -60,7 +60,7 @@ func TestMessageSet(t *testing.T) {
 
 		ui.inputFieldText = test.input
 		inputHandler(enterKey)
-		message, _ := cfg.Message(test.wantPosition)
+		message, _ := cfg.Messages.At(test.wantPosition)
 		if message != test.wantMessage {
 			t.Errorf("got %q, want %q for input %q", message, test.wantMessage, test.input)
 		}

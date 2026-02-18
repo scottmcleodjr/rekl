@@ -83,15 +83,11 @@ func handleSpeedCommand(ui UserInterface, cfg *config.Config, arg string) {
 }
 
 func handleMessageSetCommand(ui UserInterface, cfg *config.Config, position int, arg string) {
-	err := cfg.SetMessage(position, arg)
+	message, err := cfg.Messages.SetAt(position, arg)
 	if err != nil {
 		ui.WriteEvent(tui.LevelError, err.Error())
 		return
 	}
-
-	// Fetch it back from config so we get any formatting changes
-	// Ignore err because we just set this message, will be nil
-	message, _ := cfg.Message(position)
 	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("Saved message %d: %s", position, message))
 	ui.ClearInputText()
 }

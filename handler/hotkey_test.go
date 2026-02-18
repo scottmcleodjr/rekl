@@ -86,7 +86,7 @@ func TestMessageSend(t *testing.T) {
 		ui := &testUI{}
 		inputHandler := handler.InputHandler(keyer, ui, cfg)
 
-		cfg.SetMessage(test.position, "Test message")
+		cfg.Messages.SetAt(test.position, "Test message")
 		inputHandler(test.key)
 		if keyer.SendQueueIsEmpty() {
 			t.Errorf("send queue empty after sending message at position %d", test.position)

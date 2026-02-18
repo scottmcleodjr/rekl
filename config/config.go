@@ -1,12 +1,8 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"strings"
-	"sync"
-
-	"github.com/scottmcleodjr/cwkeyer"
 )
 
 const (
@@ -39,43 +35,16 @@ Any other inputs will be sent as CW if all characters are sendable.
 
 // Config holds current configuration state for the REKL application.
 type Config struct {
-	mu       sync.Mutex
 	Speed    *Speed
-	messages [10]string
+	Messages *Messages
 }
 
 // New returns a new Config.
 func New() *Config {
-	return &Config{Speed: NewSpeed()}
-}
-
-// Message returns the message at position N or an empty
-// string if that message is not set.
-func (cfg *Config) Message(position int) (string, error) {
-	if position < 0 || position > 9 {
-		return "", errors.New("message number out of range")
+	return &Config{
+		Speed:    NewSpeed(),
+		Messages: NewMessages(),
 	}
-	cfg.mu.Lock()
-	defer cfg.mu.Unlock()
-	return cfg.messages[position], nil
-}
-
-// SetMessage sets the message at position N to the string
-// message argument.
-func (cfg *Config) SetMessage(position int, message string) error {
-	if position < 0 || position > 9 {
-		return errors.New("message number out of range")
-	}
-	message = strings.ToUpper(strings.TrimSpace(message))
-	for _, r := range message {
-		if !cwkeyer.IsKeyable(r) {
-			return fmt.Errorf("message contains unsupported rune %c", r)
-		}
-	}
-	cfg.mu.Lock()
-	defer cfg.mu.Unlock()
-	cfg.messages[position] = message
-	return nil
 }
 
 // String returns the current configuration as a multiline String.
@@ -84,8 +53,8 @@ func (cfg *Config) String() string {
 	sb.WriteString(fmt.Sprintf("\nSpeed: %d WPM\n", cfg.Speed.WPM()))
 	sb.WriteString("Messages:\n")
 	for i := 1; i <= 10; i++ {
-		position := i % 10                  // Put 0 last like on a keyboard
-		message, _ := cfg.Message(position) // Error is not reachable here
+		position := i % 10                      // Put 0 last like on a keyboard
+		message, _ := cfg.Messages.At(position) // Error is not reachable here
 		sb.WriteString(fmt.Sprintf("    %d: %s\n", position, message))
 	}
 	return sb.String()
