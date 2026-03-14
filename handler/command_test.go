@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/scottmcleodjr/cwkeyer"
@@ -67,17 +68,27 @@ func TestMessageSet(t *testing.T) {
 	}
 }
 
-func TestConfig(t *testing.T) {
+func TestMessages(t *testing.T) {
 	cfg := config.New()
 	keyer := cwkeyer.New(cfg.Speed, testKey{})
 	ui := &testUI{}
 	inputHandler := handler.InputHandler(keyer, ui, cfg)
 
-	ui.inputFieldText = "\\config"
+	cfg.Messages.SetAt(5, "Message Text")
+
+	ui.inputFieldText = "\\messages"
 	inputHandler(enterKey)
-	lastEvent := ui.lastEvent()
-	if lastEvent != cfg.String() {
-		t.Errorf("got event %q, want %q for config", lastEvent, cfg.String())
+
+	got := ui.lastEvent()
+	wantContains := []string{
+		"Messages:",
+		"5: MESSAGE TEXT",
+	}
+
+	for _, want := range wantContains {
+		if !strings.Contains(got, want) {
+			t.Errorf("output missing %q", want)
+		}
 	}
 }
 

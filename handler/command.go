@@ -46,8 +46,8 @@ func commandHandler(capture *tcell.EventKey, keyer *cwkeyer.Keyer, ui UserInterf
 		handleMessageSetCommand(ui, cfg, 9, commandArg)
 	case "\\0":
 		handleMessageSetCommand(ui, cfg, 0, commandArg)
-	case "\\config":
-		ui.WriteEvent(tui.LevelInfo, cfg.String())
+	case "\\messages":
+		handleMessagesCommand(ui, cfg)
 		ui.ClearInputText()
 	case "\\help":
 		ui.WriteEvent(tui.LevelInfo, config.HelpText)
@@ -90,4 +90,20 @@ func handleMessageSetCommand(ui UserInterface, cfg *config.Config, position int,
 	}
 	ui.WriteEvent(tui.LevelInfo, fmt.Sprintf("Saved message %d: %s", position, message))
 	ui.ClearInputText()
+}
+
+func handleMessagesCommand(ui UserInterface, cfg *config.Config) {
+	var sb strings.Builder
+	messages := cfg.Messages.All()
+	fmt.Fprint(&sb, "Messages:\n")
+	for i := 1; i <= 10; i++ {
+		position := i % 10 // Put 0 last like on a keyboard
+		fmt.Fprintf(&sb, "    %d: %s", position, messages[position])
+
+		// Add a newline after all but the last line
+		if position != 0 {
+			fmt.Fprintln(&sb)
+		}
+	}
+	ui.WriteEvent(tui.LevelInfo, sb.String())
 }

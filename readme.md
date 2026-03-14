@@ -29,7 +29,7 @@ The application supports these functionalities through either entered commands o
 - **Memory**
   - **Save Message** You can save up to 10 messages.
   - **Send Message** You can send saved messages.
-- **Config** You can print the current configurations to the event view.
+-   **Messages** You can print the current saved messages to the event view.
 - **Help** You can print a list of supported commands and hotkeys to the event view.
 - **Clear** You can clear the event view.
 - **Quit** You can exit the program.
